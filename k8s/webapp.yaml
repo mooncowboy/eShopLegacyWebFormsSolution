@@ -1,0 +1,132 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eshop-webforms
+  namespace: eshop
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: eshop-webforms
+  template:
+    metadata:
+      labels:
+        app: eshop-webforms
+    spec:
+      nodeSelector:
+        kubernetes.io/os: windows
+      containers:
+      - name: eshop-webforms
+        image: your-registry/eshop-webforms:latest  # Replace with your actual image
+        ports:
+        - containerPort: 80
+        env:
+        - name: UseMockData
+          valueFrom:
+            configMapKeyRef:
+              name: eshop-webforms-config
+              key: UseMockData
+        - name: UseAzureStorage
+          valueFrom:
+            configMapKeyRef:
+              name: eshop-webforms-config
+              key: UseAzureStorage
+        - name: UseAzureManagedIdentity
+          valueFrom:
+            configMapKeyRef:
+              name: eshop-webforms-config
+              key: UseAzureManagedIdentity
+        - name: UseCustomizationData
+          valueFrom:
+            configMapKeyRef:
+              name: eshop-webforms-config
+              key: UseCustomizationData
+        - name: UseAzureActiveDirectory
+          valueFrom:
+            configMapKeyRef:
+              name: eshop-webforms-config
+              key: UseAzureActiveDirectory
+        - name: CatalogDBContext
+          valueFrom:
+            secretKeyRef:
+              name: eshop-webforms-secrets
+              key: CatalogDBContext
+        - name: StorageConnectionString
+          valueFrom:
+            secretKeyRef:
+              name: eshop-webforms-secrets
+              key: StorageConnectionString
+        - name: AppInsightsInstrumentationKey
+          valueFrom:
+            secretKeyRef:
+              name: eshop-webforms-secrets
+              key: AppInsightsInstrumentationKey
+        - name: AzureActiveDirectoryClientId
+          valueFrom:
+            secretKeyRef:
+              name: eshop-webforms-secrets
+              key: AzureActiveDirectoryClientId
+        - name: AzureActiveDirectoryTenant
+          valueFrom:
+            secretKeyRef:
+              name: eshop-webforms-secrets
+              key: AzureActiveDirectoryTenant
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 10
+      initContainers:
+      - name: wait-for-db
+        image: mcr.microsoft.com/windows/servercore:ltsc2019
+        command: ['powershell', '-Command']
+        args:
+        - |
+          $timeout = 300
+          $elapsed = 0
+          $interval = 5
+          while ($elapsed -lt $timeout) {
+            try {
+              $result = Test-NetConnection -ComputerName sqlserver-service -Port 1433 -InformationLevel Quiet
+              if ($result) {
+                Write-Host "Database is ready!"
+                exit 0
+              }
+            } catch {
+              Write-Host "Waiting for database..."
+            }
+            Start-Sleep $interval
+            $elapsed += $interval
+          }
+          Write-Host "Timeout waiting for database"
+          exit 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eshop-webforms-service
+  namespace: eshop
+spec:
+  selector:
+    app: eshop-webforms
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer

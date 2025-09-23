@@ -1,0 +1,52 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+README*
+CHANGELOG*
+
+# Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build artifacts
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+packages/
+TestResults/
+
+# Temporary files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.tmp
+*.temp
+
+# Docker
+Dockerfile*
+.dockerignore
+docker-compose*
+
+# Kubernetes
+k8s/
+*.yaml
+*.yml
+
+# Logs
+*.log
+logs/
+
+# Others
+node_modules/
+.env
+.env.local

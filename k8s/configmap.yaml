@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eshop-webforms-config
+  namespace: eshop
+data:
+  UseMockData: "false"
+  UseAzureStorage: "false"
+  UseAzureManagedIdentity: "false"
+  UseCustomizationData: "false"
+  UseAzureActiveDirectory: "false"
+  # Database connection will use secret for sensitive values
+  DatabaseServer: "sqlserver-service"
+  DatabaseName: "Microsoft.eShopOnContainers.Services.CatalogDb"
