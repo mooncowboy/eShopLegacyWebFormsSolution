@@ -13,14 +13,16 @@ resources:
   # - ingress.yaml  # Uncomment if using ingress
 
 # Patches for different environments
-patchesStrategicMerge:
+patches:
   # - patches/production.yaml  # Uncomment and create for production overrides
 
 # Common labels applied to all resources
-commonLabels:
-  app.kubernetes.io/name: eshop-webforms
-  app.kubernetes.io/version: "1.0"
-  app.kubernetes.io/component: application
+labels:
+  - includeSelectors: true
+    pairs:
+      app.kubernetes.io/name: eshop-webforms
+      app.kubernetes.io/version: "1.0"
+      app.kubernetes.io/component: application
 
 # Images to replace (useful for different environments)
 images:
